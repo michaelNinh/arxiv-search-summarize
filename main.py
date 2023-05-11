@@ -7,8 +7,12 @@ import datetime
 from bs4 import BeautifulSoup
 from pdf import pdf_to_text, create_chunks, abs_to_pdf
 import tiktoken
+from dotenv import load_dotenv
 
-openai.api_key = ''
+
+load_dotenv()  # take environment variables from .env.
+
+openai.api_key = os.getenv("SECRET_KEY")
 gpt_version = "gpt-3.5-turbo"
 
 keywords = ['large language models', 'openai']
