@@ -9,18 +9,18 @@ from pdf import pdf_to_text, create_chunks, abs_to_pdf
 import tiktoken
 from dotenv import load_dotenv
 
-
 load_dotenv()  # take environment variables from .env.
 
 openai.api_key = os.getenv("SECRET_KEY")
 gpt_version = "gpt-3.5-turbo"
 
 keywords = ['large language models', 'openai']
-max_papers = 1  # max amount of papers to summarize
+max_papers = 5  # max amount of papers to summarize
 
 summary_prompt = 'Summarize the user input in 3 sentences using simple english'
 full_summary_prompt = 'The following user input is an excerpt from a research paper. Produce a short-length summary of ' \
-                      'the text using simple English. If there is text not related to the research, ' \
+                      'the text using simple English while retaining salient points or key insights. If there is text ' \
+                      'not related to the research, ' \
                       'such as references, do not include it in the summary.'
 
 # research should not be older than this date
@@ -132,11 +132,11 @@ def full_summary(paper):
     for chunk in chunks:
         encoding = tiktoken.encoding_for_model(gpt_version)
         token_count = len(encoding.encode(chunk)) + len(encoding.encode(full_summary_prompt))
-        while int(token_count) > 4096:
+        while token_count > 4096:
             chunk_size = int(chunk_size * 0.9)
             overlap = int(overlap * 0.9)
             chunks = create_chunks(pdf_text, chunk_size, overlap)
-            token_count = encoding.encode(chunk) + encoding.encode(full_summary_prompt)
+            token_count = len(encoding.encode(chunk)) + len(encoding.encode(full_summary_prompt))
     final_summary = summarize_chunks(chunks)
     title = re.sub(r'\W+', '_', paper['title'])
     with open(f'papers/{title}.txt', 'a') as f:
@@ -145,12 +145,14 @@ def full_summary(paper):
     print("====FULL SUMMARY====")
     return final_summary
 
+
 # Allow the user to select papers to fully summarize
 summarized_papers = set()
 
 while True:
     try:
-        selection = input("Enter paper numbers to summarize, separated by spaces like so '1 2 3', or 'q' to quit: ").strip()
+        selection = input(
+            "Enter paper numbers to summarize, separated by spaces like so '1 2 3', or 'q' to quit: ").strip()
         if selection.lower() == 'q':
             break
         numbers = map(int, selection.split())
@@ -162,5 +164,8 @@ while True:
         if len(summarized_papers) == len(papers):
             print("All papers have been summarized.")
             break
-    except (ValueError, IndexError):
-        print("Invalid selection, please try again.")
+    except ValueError:
+        print("Invalid selection, please make sure you're entering numbers separated by spaces.")
+    except IndexError:
+        print("Invalid selection, please make sure the numbers you're entering correspond to available papers.")
+
