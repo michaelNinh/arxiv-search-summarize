@@ -11,7 +11,12 @@ pip install -r requirements.txt
 python main.py
 ```
 
+**Bugs:**
+- Selecting multiple papers to summarize will sometimes fail
+
 **Features:**
+- first summarizes paper abstract to help you make a decision if you want the full summary
+- summarizes the entire paper if selected
 - select GPT version
 - use your own summary prompt
 - add your own tags
@@ -20,8 +25,8 @@ python main.py
 - runs in console, prints summaries in console 
 
 **To do later:**
-- create a summary of the whole paper via chunking
 - add costs
+- retry on fail & better error handling
 - search for new  papers added since list time the script ran
 
 **Example output:**
